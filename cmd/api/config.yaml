@@ -1,0 +1,18 @@
+app:
+  name: e-wallet
+  port: 4000
+  encryption:
+    salt: 10
+    jwt_secret: secretToken
+
+db:
+  host: localhost
+  port: 5432
+  user: postgres
+  name: e-wallet
+  password: postgres
+  connection_pool:
+    max_idle: 10
+    max_open: 30
+    max_lifetime: 60 #second
+    max_idle_time: 60 #second

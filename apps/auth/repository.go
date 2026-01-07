@@ -4,6 +4,7 @@ import (
 	"ariskaAdi/e-wallet/infra/response"
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -19,9 +20,9 @@ func newRepository(db *sqlx.DB) repository {
 func (r repository) CreateAuth(ctx context.Context, model AuthEntity) (err error) {
 	query := `
 		INSERT INTO auth (
-			username, email, password, created_at, updated_at, public_id
+			username, email, password, created_at, updated_at, public_id, otp, verified
 		) VALUES (
-			:username, :email, :password, :created_at, :updated_at, :public_id
+			:username, :email, :password, :created_at, :updated_at, :public_id, :otp, :verified
 		)
 	`
 
@@ -39,7 +40,7 @@ func (r repository) CreateAuth(ctx context.Context, model AuthEntity) (err error
 
 func (r repository) GetAuthByEmail(ctx context.Context, email string) (model AuthEntity, err error) {
 		query := `
-		SELECT id, username, email, password,  created_at, updated_at, public_id
+		SELECT id, username, email, password,  created_at, updated_at, public_id, otp, verified
 		FROM auth
 		WHERE email = $1
 	`
@@ -52,4 +53,23 @@ func (r repository) GetAuthByEmail(ctx context.Context, email string) (model Aut
 		return
 	}
 	return
+}
+
+func (r repository) UpdateAuthVerifiedOtp(ctx context.Context, model AuthEntity) (err error) {
+
+	model.Verified = true
+	model.UpdatedAt = time.Now()
+
+	query := `
+		UPDATE auth
+		SET verified = :verified, otp = null, updated_at = :updated_at
+		WHERE email = :email AND otp = :otp
+	`
+
+	_, err = r.db.NamedExecContext(ctx, query, model)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

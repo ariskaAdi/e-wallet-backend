@@ -10,3 +10,8 @@ type LoginRequestPayload struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
+type ValidateOtpRequestPayload struct {
+	Email string `json:"email"`
+	OTP   string `json:"otp"`
+}

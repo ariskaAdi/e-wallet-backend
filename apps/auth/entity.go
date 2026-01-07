@@ -15,9 +15,11 @@ type AuthEntity struct {
 	Username  string `db:"username"`
 	Email     string `db:"email"`
 	PublicId  uuid.UUID `db:"public_id"`
+	OTP       string `db:"otp"`
 	Password  string `db:"password"`
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
+	Verified  bool `db:"verified"`
 }
 
 func NewFormRegisterRequset(req RegisterRequestPayload) AuthEntity {
@@ -25,7 +27,9 @@ func NewFormRegisterRequset(req RegisterRequestPayload) AuthEntity {
 		Username: req.Username,
 		Email: req.Email,
 		PublicId: uuid.New(),
+		OTP: utils.GenerateOtp(4),
 		Password: req.Password,
+		Verified: false,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -38,12 +42,23 @@ func NewFormLoginRequset(req LoginRequestPayload) AuthEntity {
 	}
 }
 
+func NewFormValidateOtpRequset(req ValidateOtpRequestPayload) AuthEntity {
+	return AuthEntity{
+		Email: req.Email,
+		OTP: req.OTP,
+	}
+}
+
 func (a AuthEntity) Validate() (err error) {
 	if err = a.EmailValidate();err != nil {
 		return	
 	}
 
 	if err = a.PasswordValidate();err != nil {
+		return
+	}
+
+	if err = a.OtpValidate();err != nil {
 		return
 	}
 
@@ -61,6 +76,17 @@ func (a AuthEntity) EmailValidate() (err error) {
 	}
 
 	return
+}
+
+func (a AuthEntity) OtpValidate() (err error) {
+	if a.OTP == "" {
+		return response.ErrOtpRequired
+	}
+
+	if len(a.OTP) != 4 {
+		return response.ErrOtpInvalid
+	}
+	return	
 }
 
 func (a AuthEntity) PasswordValidate() (err error) {
@@ -99,3 +125,4 @@ func (a AuthEntity) VerifyPasswordFromPlain(encrypted string) (err error) {
 func (a AuthEntity) GenerateToken(secret string) (tokenString string, err error) {
 	return utils.GenerateToken(a.PublicId.String(),secret)
 }
+

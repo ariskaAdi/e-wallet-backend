@@ -21,6 +21,9 @@ var (
 	ErrPasswordInvalid  = errors.New("password is must be at least 6 characters")
 	ErrEmailAlredyExist = errors.New("email already exist")
 	ErrPasswordNotMatch = errors.New("password not match")
+	ErrOtpRequired = errors.New("otp is required")
+	ErrOtpInvalid = errors.New("otp is invalid")
+	ErrEmailAlreadyVerified = errors.New("email already verified")
 )
 
 type Error struct {

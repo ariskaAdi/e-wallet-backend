@@ -1,50 +1,35 @@
 package config
 
-import (
-	"os"
-
-	"go.yaml.in/yaml/v3"
-)
-
 type Config struct {
-	App AppConfig `yaml:"app"`
-	DB  DBConfig  `yaml:"db"`
+	App AppConfig
+	DB  DBConfig
 }
 
 type AppConfig struct {
-	Name string `yaml:"name"`
-	Port string `yaml:"port"`
-	Encryption EncryptionConfig `yaml:"encryption"`
+	Name       string
+	Port       string
+	Encryption EncryptionConfig
 }
 
 type EncryptionConfig struct {
-	Salt uint8 `yaml:"salt"`
-	JWTSecret string `yaml:"jwt_secret"`
+	Salt      uint8
+	JWTSecret string
 }
 
 type DBConfig struct {
-	Host           string                 `yaml:"host"`
-	Port           string                 `yaml:"port"`
-	User           string                 `yaml:"user"`
-	Name           string                 `yaml:"name"`
-	Password       string                 `yaml:"password"`
-	ConnectionPool DBConnectionPoolConfig `yaml:"connection_pool"`
+	Host           string
+	Port           string
+	User           string
+	Name           string
+	Password       string
+	ConnectionPool DBConnectionPoolConfig
 }
 
 type DBConnectionPoolConfig struct {
-	MaxIdle     int `yaml:"max_idle"`
-	MaxOpen     int `yaml:"max_open"`
-	MaxLifetime int `yaml:"max_lifetime"`
-	MaxIdleTime int `yaml:"max_idle_time"`
+	MaxIdle     int
+	MaxOpen     int
+	MaxLifetime int
+	MaxIdleTime int
 }
 
 var Cfg Config
-
-func LoadConfig(filename string) (err error) {
-	configByte, err := os.ReadFile(filename)
-	if err != nil {
-		return
-	}
-
-	return yaml.Unmarshal(configByte, &Cfg)
-}

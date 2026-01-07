@@ -7,13 +7,15 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	filename := "../../cmd/api/config.yaml"
-	if err := config.LoadConfig(filename); err != nil {
-		panic(err)
-	}
+	if err := godotenv.Load("../../.env"); err != nil {
+	log.Println(".env not found, using OS env")
+}
+
+	config.LoadConfig()
 
 	db, err := database.ConnectPostgres(config.Cfg.DB)
 	if err != nil {

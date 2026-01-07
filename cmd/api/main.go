@@ -4,6 +4,8 @@ import (
 	"ariskaAdi/e-wallet/apps/auth"
 	"ariskaAdi/e-wallet/eksternal/database"
 	"ariskaAdi/e-wallet/internal/config"
+	"ariskaAdi/e-wallet/internal/mail"
+	"context"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -26,12 +28,25 @@ func main() {
 		log.Println("DB CONNECTED")
 	}
 
+	// worker email
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	emailWorker := mail.NewWorker(mail.SMTPConfig{
+		Host:     config.Cfg.SMTP.Host,
+		Port:     config.Cfg.SMTP.Port,
+		User:     config.Cfg.SMTP.User,
+		Pass:     config.Cfg.SMTP.Pass,
+		From:     config.Cfg.SMTP.From,
+	}, 100)
+	emailWorker.Start(ctx)
+
 	router := fiber.New(fiber.Config{
 		Prefork: true,
 		AppName: config.Cfg.App.Name,
 	})
 
-	auth.Init(router, db)
+	auth.Init(router, db, emailWorker)
 
 	router.Listen(":" + config.Cfg.App.Port)
 }

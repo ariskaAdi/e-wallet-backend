@@ -3,6 +3,7 @@ package auth
 import (
 	"ariskaAdi/e-wallet/infra/response"
 	"ariskaAdi/e-wallet/internal/config"
+	"ariskaAdi/e-wallet/internal/mail"
 	"context"
 )
 
@@ -14,11 +15,13 @@ type Repository interface {
 
 type service struct {
 	repo Repository
+	emailWorker *mail.Worker
 }
 
-func newService(repo Repository) service {
+func newService(repo Repository, emailWorker *mail.Worker) service {
 	return service{
 		repo: repo,
+		emailWorker: emailWorker,
 	}
 }
 
@@ -44,7 +47,17 @@ func (s service) register(ctx context.Context, req RegisterRequestPayload) (err 
 		return response.ErrEmailAlredyExist
 	}
 
-	return s.repo.CreateAuth(ctx, authEntity)
+	// create user
+	if err = s.repo.CreateAuth(ctx, authEntity); err != nil {
+		return	
+	}
+
+	s.emailWorker.Enqueue(mail.OTPJob{
+		To:       authEntity.Email,
+		Username: authEntity.Username,
+		Otp:      authEntity.OTP,
+	})
+	return nil
 }
 
 func (s service) login(ctx context.Context, req LoginRequestPayload) (token string, err error) {
@@ -94,7 +107,11 @@ func (s service) verifyOtp(ctx context.Context, req ValidateOtpRequestPayload) (
 
 	model.OTP = authEntity.OTP
 
-	return s.repo.UpdateAuthVerifiedOtp(ctx, model)
+	if err = s.repo.UpdateAuthVerifiedOtp(ctx, model); err != nil {
+		return response.ErrOtpInvalid	
+	}
+
+	return nil
 }
 
 

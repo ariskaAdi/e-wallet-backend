@@ -42,6 +42,13 @@ func LoadConfig() {
 				MaxIdleTime: viper.GetInt("DB_MAX_IDLE_TIME"),
 			},
 		},
+		SMTP: SMTPConfig{
+			Host: viper.GetString("SMTP_HOST"),
+			Port: viper.GetInt("SMTP_PORT"),
+			User: viper.GetString("SMTP_USER"),
+			Pass: viper.GetString("SMTP_PASS"),
+			From: viper.GetString("SMTP_FROM"),
+		},
 	}
 
 	validate()

@@ -123,6 +123,6 @@ func (a AuthEntity) VerifyPasswordFromPlain(encrypted string) (err error) {
 }
 
 func (a AuthEntity) GenerateToken(secret string) (tokenString string, err error) {
-	return utils.GenerateToken(a.PublicId.String(),secret)
+	return utils.GenerateToken(a.PublicId.String(),a.Verified,secret)
 }
 

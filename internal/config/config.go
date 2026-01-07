@@ -1,8 +1,9 @@
 package config
 
 type Config struct {
-	App AppConfig
-	DB  DBConfig
+	App  AppConfig
+	DB   DBConfig
+	SMTP SMTPConfig
 }
 
 type AppConfig struct {
@@ -30,6 +31,14 @@ type DBConnectionPoolConfig struct {
 	MaxOpen     int
 	MaxLifetime int
 	MaxIdleTime int
+}
+
+type SMTPConfig struct {
+	Host string
+	Port int
+	User string
+	Pass string
+	From string
 }
 
 var Cfg Config

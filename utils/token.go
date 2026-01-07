@@ -7,9 +7,10 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateToken(id string,  secret string) (tokenString string, err error) {
+func GenerateToken(id string, verified bool, secret string) (tokenString string, err error) {
 	claims := jwt.MapClaims{
 		"id":  id,
+		"verified": verified,
 		"exp": jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
 	}
 

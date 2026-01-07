@@ -40,7 +40,7 @@ func (r repository) CreateAuth(ctx context.Context, model AuthEntity) (err error
 
 func (r repository) GetAuthByEmail(ctx context.Context, email string) (model AuthEntity, err error) {
 		query := `
-		SELECT id, username, email, password,  created_at, updated_at, public_id, otp, verified
+		SELECT id, username, email, password,  created_at, updated_at, public_id, verified
 		FROM auth
 		WHERE email = $1
 	`
@@ -66,9 +66,18 @@ func (r repository) UpdateAuthVerifiedOtp(ctx context.Context, model AuthEntity)
 		WHERE email = :email AND otp = :otp
 	`
 
-	_, err = r.db.NamedExecContext(ctx, query, model)
+	res, err := r.db.NamedExecContext(ctx, query, model)
 	if err != nil {
 		return err
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return response.ErrOtpInvalid
 	}
 
 	return nil

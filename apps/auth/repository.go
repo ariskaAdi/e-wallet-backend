@@ -17,7 +17,7 @@ func newRepository(db *sqlx.DB) repository {
 	return repository{db: db}
 }
 
-func (r repository) CreateAuth(ctx context.Context, model AuthEntity) (err error) {
+func (r repository) CreateAuth(ctx context.Context, tx *sqlx.Tx, model AuthEntity) (err error) {
 	query := `
 		INSERT INTO auth (
 			username, email, password, created_at, updated_at, public_id, otp, verified
@@ -26,14 +26,10 @@ func (r repository) CreateAuth(ctx context.Context, model AuthEntity) (err error
 		)
 	`
 
-	stmt, err := r.db.PrepareNamedContext(ctx, query)
+	_, err = tx.NamedExecContext(ctx, query, model)
 	if err != nil {
 		return
 	}
-
-	defer stmt.Close()
-
-	_, err = stmt.ExecContext(ctx, model)
 
 	return
 }
@@ -82,3 +78,32 @@ func (r repository) UpdateAuthVerifiedOtp(ctx context.Context, model AuthEntity)
 
 	return nil
 }
+
+// Begin implements Repository.
+func (r repository) Begin(ctx context.Context) (tx *sqlx.Tx, err error) {
+	tx, err = r.db.BeginTxx(ctx, &sql.TxOptions{})
+	return
+}
+
+// Commit implements Repository.
+func (repository) Commit(ctx context.Context, tx *sqlx.Tx) (err error) {
+	return tx.Commit()
+}
+
+// Rollback implements Repository.
+func (repository) Rollback(ctx context.Context, tx *sqlx.Tx) (err error) {
+	return tx.Rollback()
+}
+
+func (r repository) CreateWallet(ctx context.Context, tx *sqlx.Tx, model WalletEntity) (err error) {
+	query := `
+		INSERT INTO wallet (
+			user_public_id, balance, created_at, updated_at
+		) VALUES (
+			:user_public_id, :balance, :created_at, :updated_at
+		)
+	`
+	_, err = r.db.NamedExecContext(ctx, query, model)
+	return
+}
+

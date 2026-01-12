@@ -5,16 +5,35 @@ import (
 	"ariskaAdi/e-wallet/internal/config"
 	"ariskaAdi/e-wallet/internal/mail"
 	"context"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type Repository interface {
+	AuthRepository
+	WalletRepository
+	AuthDBRepository
+}
+
+
+type AuthRepository interface {
 	GetAuthByEmail(ctx context.Context, email string) (model AuthEntity, err error)
-	CreateAuth(ctx context.Context, model AuthEntity) (err error)
+	CreateAuth(ctx context.Context, tx *sqlx.Tx, model AuthEntity) (err error)
 	UpdateAuthVerifiedOtp(ctx context.Context, model AuthEntity) (err error)
 }
 
+type AuthDBRepository interface {
+	Begin(ctx context.Context) (tx *sqlx.Tx, err error)
+	Rollback(ctx context.Context, tx *sqlx.Tx,) ( err error)
+	Commit(ctx context.Context, tx *sqlx.Tx,) ( err error)
+}
+
+type WalletRepository interface {
+	CreateWallet(ctx context.Context, tx *sqlx.Tx, model WalletEntity) (err error)
+}
+
 type service struct {
-	repo Repository
+	repo        Repository
 	emailWorker *mail.Worker
 }
 
@@ -36,6 +55,8 @@ func (s service) register(ctx context.Context, req RegisterRequestPayload) (err 
 		return
 	}
 
+	
+
 	model, err := s.repo.GetAuthByEmail(ctx, authEntity.Email)
 	if err != nil {
 		if err != response.ErrNotFound {
@@ -47,9 +68,27 @@ func (s service) register(ctx context.Context, req RegisterRequestPayload) (err 
 		return response.ErrEmailAlredyExist
 	}
 
+	// start transaction
+	tx, err := s.repo.Begin(ctx)
+	if err != nil {
+		return
+	}
+
+	defer s.repo.Rollback(ctx, tx)
+
 	// create user
-	if err = s.repo.CreateAuth(ctx, authEntity); err != nil {
+	if err = s.repo.CreateAuth(ctx, tx, authEntity); err != nil {
 		return	
+	}
+
+	// create wallet
+	wallet := NewWallet(authEntity.PublicId)
+	if err = s.repo.CreateWallet(ctx, tx, wallet); err != nil {
+		return
+	}
+
+	if err = s.repo.Commit(ctx, tx); err != nil {
+		return
 	}
 
 	s.emailWorker.Enqueue(mail.OTPJob{
@@ -113,5 +152,3 @@ func (s service) verifyOtp(ctx context.Context, req ValidateOtpRequestPayload) (
 
 	return nil
 }
-
-

@@ -7,9 +7,9 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateToken(id string, verified bool, secret string) (tokenString string, err error) {
+func GenerateToken(public_id string, verified bool, secret string) (tokenString string, err error) {
 	claims := jwt.MapClaims{
-		"id":  id,
+		"public_id":  public_id,
 		"verified": verified,
 		"exp": jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
 	}
@@ -24,7 +24,7 @@ func GenerateToken(id string, verified bool, secret string) (tokenString string,
 	return tokenString, nil
 }
 
-func ValidateToken(tokenString string, secret string) (id string,role string, err error) {
+func ValidateToken(tokenString string, secret string) (public_id string,  err error) {
 	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method")
@@ -34,13 +34,12 @@ func ValidateToken(tokenString string, secret string) (id string,role string, er
 	})
 
 	if err != nil {
-		return "","", err
+		return "", err
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
-		id = fmt.Sprintf("%v", claims["id"])
-		role = fmt.Sprintf("%v", claims["role"])
+		public_id = fmt.Sprintf("%v", claims["public_id"])
 		return 
 	}
 

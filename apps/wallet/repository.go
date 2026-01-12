@@ -1,7 +1,9 @@
 package wallet
 
 import (
+	"ariskaAdi/e-wallet/infra/response"
 	"context"
+	"database/sql"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -14,15 +16,22 @@ func newRepository(db *sqlx.DB) repository {
 	return repository{db: db}
 }
 
-
-func (r repository) CreateWallet(ctx context.Context, model WalletEntity) (err error) {
+func (r repository) GetWalletByUserPublicId(ctx context.Context, userPublicId string) (model WalletEntity, err error) {
 	query := `
-		INSERT INTO wallet (
-			user_id, balance, created_at, updated_at
-		) VALUES (
-			:user_id, :balance, :created_at, :updated_at
-		)
+		SELECT id, user_public_id, balance, created_at, updated_at
+		FROM wallet
+		WHERE user_public_id = $1
 	`
-	_, err = r.db.NamedExecContext(ctx, query, model)
-	return
+
+	err = r.db.GetContext(ctx, &model, query, userPublicId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			err = response.ErrNotFound
+			return
+		}
+		return
+	}
+
+	return 
 }
+

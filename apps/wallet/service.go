@@ -1,10 +1,12 @@
 package wallet
 
-import "context"
+import (
+	"ariskaAdi/e-wallet/infra/response"
+	"context"
+)
 
 type Repository interface {
-	GetWalletByUserId(ctx context.Context, userId string) (model WalletEntity, err error)
-	CreateWallet(ctx context.Context, model WalletEntity) (err error)
+	GetWalletByUserPublicId(ctx context.Context, userPublicId string) (model WalletEntity, err error)
 }
 
 type service struct {
@@ -16,15 +18,17 @@ func newService(repo Repository) service {
 }
 
 
-func (s service) GetWallet(ctx context.Context, userId string) (model WalletEntity, err error) {
-	model , err = s.repo.GetWalletByUserId(ctx, userId)
+func (s service) GetMyWallet(ctx context.Context, userPublicId string) (myWallet WalletEntity, err error) {
+	myWallet, err = s.repo.GetWalletByUserPublicId(ctx, userPublicId)
+
 	if err != nil {
+		if err == response.ErrNotFound {
+			myWallet = WalletEntity{}
+			return myWallet, nil
+		}
 		return
 	}
+
 	return
 }
 
-func (s service) CreateWallet(ctx context.Context, model WalletEntity) (err error) {
-	err = s.repo.CreateWallet(ctx, model)
-	return
-}

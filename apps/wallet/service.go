@@ -7,6 +7,7 @@ import (
 
 type Repository interface {
 	GetWalletByUserPublicId(ctx context.Context, userPublicId string) (model WalletEntity, err error)
+	GetByWalletId(ctx context.Context, walletPublicId string) (model WalletEntity, err error)
 }
 
 type service struct {
@@ -32,3 +33,14 @@ func (s service) GetMyWallet(ctx context.Context, userPublicId string) (myWallet
 	return
 }
 
+func (s service) GetWalletId(ctx context.Context, req GetWalletByIdRequestPayload) (wallet WalletEntity, err error) {
+	wallet, err = s.repo.GetByWalletId(ctx, req.WalletPublicId)
+	if err != nil {
+		if err == response.ErrNotFound {
+			wallet = WalletEntity{}
+			return wallet, nil
+		}
+		return
+	}
+	return
+}

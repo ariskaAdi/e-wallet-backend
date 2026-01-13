@@ -19,5 +19,6 @@ func Init(router fiber.Router, db *sqlx.DB) {
 
 		// wallet endpoint
 		walletRoute.Get("/my-wallet", handler.GetMyWallet)
+		walletRoute.Get("/someone-wallet", handler.GetSomeoneWallet)
 	}
 }

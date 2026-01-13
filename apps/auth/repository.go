@@ -98,9 +98,9 @@ func (repository) Rollback(ctx context.Context, tx *sqlx.Tx) (err error) {
 func (r repository) CreateWallet(ctx context.Context, tx *sqlx.Tx, model WalletEntity) (err error) {
 	query := `
 		INSERT INTO wallet (
-			user_public_id, balance, created_at, updated_at
+			user_public_id, wallet_public_id, name, balance, created_at, updated_at
 		) VALUES (
-			:user_public_id, :balance, :created_at, :updated_at
+			:user_public_id, :wallet_public_id, :name, :balance, :created_at, :updated_at
 		)
 	`
 	_, err = r.db.NamedExecContext(ctx, query, model)

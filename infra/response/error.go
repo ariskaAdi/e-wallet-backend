@@ -24,6 +24,10 @@ var (
 	ErrOtpRequired = errors.New("otp is required")
 	ErrOtpInvalid = errors.New("otp is invalid")
 	ErrEmailAlreadyVerified = errors.New("email already verified")
+
+	// transaction error
+	ErrAmountInvalid = errors.New("amount must greater than 0")
+	ErrTransactionTypeInvalid = errors.New("invalid type transaction")
 )
 
 type Error struct {

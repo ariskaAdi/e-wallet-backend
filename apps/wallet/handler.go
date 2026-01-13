@@ -32,11 +32,45 @@ func (h handler) GetMyWallet(ctx *fiber.Ctx) error {
 		).Send(ctx)
 	}
 
-	resp := WalletResponse{
+	resp := MyWalletResponse{
 		UserPublicId: myWallet.UserPublicId,
 		Balance:      myWallet.Balance,
 		CreatedAt:    myWallet.CreatedAt,
 		UpdatedAt:    myWallet.UpdatedAt,
+	}
+
+	return infrafiber.NewResponse(
+		infrafiber.WithHttpCode(http.StatusOK),
+		infrafiber.WithPayload(resp),
+	).Send(ctx)
+}
+
+func (h handler) GetSomeoneWallet(ctx *fiber.Ctx) error {
+
+	req := GetWalletByIdRequestPayload{}
+
+	if err := ctx.BodyParser(&req); err != nil {
+		myErr := response.ErrorBadRequest
+		return infrafiber.NewResponse(
+			infrafiber.WithMessage(err.Error()),
+			infrafiber.WithError(myErr),
+		).Send(ctx)
+	}
+
+	wallet, err := h.svc.GetWalletId(ctx.UserContext(), req)
+	if err != nil {
+		myErr, ok := response.ErrorMapping[err.Error()]
+		if !ok {
+			myErr = response.ErrorGeneral
+		}
+		return infrafiber.NewResponse(
+			infrafiber.WithMessage(err.Error()),
+			infrafiber.WithError(myErr),
+		).Send(ctx)
+		}
+
+	resp := FindWalletResponse{
+		Name: wallet.Name,
 	}
 
 	return infrafiber.NewResponse(

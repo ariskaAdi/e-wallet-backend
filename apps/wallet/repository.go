@@ -35,3 +35,21 @@ func (r repository) GetWalletByUserPublicId(ctx context.Context, userPublicId st
 	return 
 }
 
+func (r repository) GetByWalletId(ctx context.Context, walletPublicId string) (model WalletEntity, err error) {
+	query := `
+		SELECT id, user_public_id, name, balance, created_at, updated_at
+		FROM wallet
+		WHERE wallet_public_id = $1
+	`
+
+	err = r.db.GetContext(ctx, &model, query, walletPublicId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			err = response.ErrNotFound
+			return
+		}
+		return
+	}
+	return
+}
+

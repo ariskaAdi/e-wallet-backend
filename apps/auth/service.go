@@ -82,7 +82,7 @@ func (s service) register(ctx context.Context, req RegisterRequestPayload) (err 
 	}
 
 	// create wallet
-	wallet := NewWallet(authEntity.PublicId)
+	wallet := NewWallet(authEntity.PublicId, authEntity.Username)
 	if err = s.repo.CreateWallet(ctx, tx, wallet); err != nil {
 		return
 	}

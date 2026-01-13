@@ -1,7 +1,11 @@
 package transaction
 
-type CreateTransactionRequestPayload struct {
-	WalletId     int64  `json:"wallet_id"`
-	UserPublicId string `json:"user_public_id"`
-	Amount       int64  `json:"amount"`
+type TransferInquiryRequestPayload struct {
+	DestinationWalletPublicId string `json:"destination_wallet_public_id"`
+}
+
+type TransferExecuteRequest struct {
+	InquiryKey  string `json:"inquiry_key"`
+	Amount      int64  `json:"amount"`
+	Description string `json:"description"`
 }

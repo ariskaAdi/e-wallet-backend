@@ -24,8 +24,8 @@ const (
 
 type TransactionEntity struct {
 	Id           		int `db:"id"`
-	TransactionId 		uuid.UUID `db:"transaction_id"`
-	WalletId		 	int64 `db:"wallet_id"`
+	TransactionId 		string `db:"transaction_id"`
+	WalletPublicId		string `db:"wallet_public_id"`
 	SofNumber 			string `db:"sof_number"`
 	DofNumber			string `db:"dof_number"`
 	Type 				TransactionType `db:"type"`
@@ -49,9 +49,54 @@ func (t TransactionEntity) Validate() (err error){
 	return
 }
 
-func NewTransaction(req CreateTransactionRequestPayload) TransactionEntity {
+func NewTransaction(walletPublicId  string) TransactionEntity {
 	return TransactionEntity{
-		TransactionId: uuid.New(),
-		WalletId: req.WalletId,
+		WalletPublicId : walletPublicId ,
+		Status:       TransactionStatusPending,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
 	}
-} 
+}
+
+func NewCreditTransaction(
+	sourceWallet WalletEntity,
+	destWallet WalletEntity,
+	amount int64,
+	description string,
+) TransactionEntity {
+
+	return TransactionEntity{
+		TransactionId:  uuid.NewString(),
+		WalletPublicId: destWallet.WalletPublicId,
+		SofNumber:      sourceWallet.WalletPublicId,
+		DofNumber:      destWallet.WalletPublicId,
+		Type:           TransactionTypeCredit,
+		Amount:         amount,
+		Status:         TransactionStatusPending,
+		Description:    description,
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+}
+
+
+func NewDebitTransaction(
+	sourceWallet WalletEntity,
+	destWallet WalletEntity,
+	amount int64,
+	description string,
+) TransactionEntity {
+
+	return TransactionEntity{
+		TransactionId:  uuid.NewString(),
+		WalletPublicId: sourceWallet.WalletPublicId,
+		SofNumber:      sourceWallet.WalletPublicId,
+		DofNumber:      destWallet.WalletPublicId,
+		Type:           TransactionTypeDebit,
+		Amount:         amount,
+		Status:         TransactionStatusPending,
+		Description:    description,
+		CreatedAt:      time.Now(),
+		UpdatedAt:      time.Now(),
+	}
+}

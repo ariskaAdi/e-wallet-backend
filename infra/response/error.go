@@ -28,6 +28,8 @@ var (
 	// transaction error
 	ErrAmountInvalid = errors.New("amount must greater than 0")
 	ErrTransactionTypeInvalid = errors.New("invalid type transaction")
+	ErrInsufficientBalance = errors.New("insufficient balance")
+	ErrSameWallet = errors.New("same wallet")
 )
 
 type Error struct {

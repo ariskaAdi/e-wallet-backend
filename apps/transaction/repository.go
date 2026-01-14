@@ -46,7 +46,7 @@ func (r repository) CreateTransaction(ctx context.Context, tx *sqlx.Tx, model Tr
 
 func (r repository) GetByUserPublicId(ctx context.Context, userPublicId string) (model WalletEntity, err error) {
 	query := `
-		SELECT id, user_public_id, balance, created_at, updated_at
+		SELECT id, user_public_id, name, balance, created_at, updated_at
 		FROM wallet
 		WHERE user_public_id = $1
 	`
@@ -65,7 +65,7 @@ func (r repository) GetByUserPublicId(ctx context.Context, userPublicId string) 
 
 func (r repository) GetByWalletPublicId(ctx context.Context, walletPublicId string) (model WalletEntity, err error) {
 	query := `
-		SELECT id, user_public_id, name, balance, created_at, updated_at
+		SELECT id, user_public_id, wallet_public_id, name, balance, created_at, updated_at
 		FROM wallet
 		WHERE wallet_public_id = $1
 	`
@@ -88,7 +88,7 @@ func (r repository) GetByUserPublicIdForUpdate(ctx context.Context, tx *sqlx.Tx,
 		WHERE user_public_id = $1
 		FOR UPDATE
 	`
-	err = r.db.GetContext(ctx, &model, query, userPublicId)
+	err = tx.GetContext(ctx, &model, query, userPublicId)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			err = response.ErrNotFound
@@ -109,7 +109,7 @@ func (r repository) GetByWalletPublicIdForUpdate(ctx context.Context, tx *sqlx.T
 		FOR UPDATE
 	`
 
-	err = r.db.GetContext(ctx, &model, query, walletPublicId)
+	err = tx.GetContext(ctx, &model, query, walletPublicId)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			err = response.ErrNotFound
@@ -123,7 +123,7 @@ func (r repository) GetByWalletPublicIdForUpdate(ctx context.Context, tx *sqlx.T
 func (r repository) UpdateWallet(ctx context.Context, tx *sqlx.Tx, model WalletEntity) (err error) {
 	query := `
 		UPDATE wallet
-		SET balance = :balance
+		SET balance = :balance,
 			updated_at = :updated_at
 		WHERE id = :id
 	`

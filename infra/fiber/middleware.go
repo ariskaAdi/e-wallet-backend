@@ -37,7 +37,7 @@ func CheckAuth() fiber.Handler {
 			).Send(c)
 		}
 
-		c.Locals("PUBLIC_ID", public_id)
+		c.Locals("user_public_id", public_id)
 		return c.Next()
 	}
 }

@@ -3,6 +3,7 @@ package transaction
 import (
 	"ariskaAdi/e-wallet/infra/response"
 	"context"
+	"log"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -48,53 +49,55 @@ func newService(repo Repository) service {
 	return service{repo: repo}
 }
 
-func (s service) TransferInquiry(ctx context.Context, req TransferInquiryRequestPayload, UserPublicId string) (InquiryKey InquiryEntity, destWallet WalletEntity, err error) {
+func (s service) TransferInquiry(ctx context.Context, req TransferInquiryRequestPayload, UserPublicId string) (InquiryKey InquiryEntity, err error) {
 
 	// check wallet sender
 	myWallet, err := s.repo.GetByUserPublicId(ctx, UserPublicId)
-	if err != nil || !myWallet.isExist() {
-		return InquiryEntity{}, WalletEntity{}, response.ErrNotFound
-	}
-
-		// validate
-	if myWallet.WalletPublicId == destWallet.WalletPublicId {
-		err = response.ErrSameWallet
-		return
+	if err != nil  {
+		log.Println("user id salah")
+		return InquiryEntity{},  response.ErrNotFound
 	}
 	
-
 	// check wallet receiver
-	destWallet, err = s.repo.GetByWalletPublicId(ctx, req.Dof)
-	if err != nil || !destWallet.isExist() {
-		return InquiryEntity{}, WalletEntity{}, response.ErrNotFound
+	destWallet, err := s.repo.GetByWalletPublicId(ctx, req.Dof)
+	if err != nil  {
+		log.Println("wallet id salah")
+		return InquiryEntity{},  response.ErrNotFound
+	}
+
+	// optional: same wallet check
+	if myWallet.WalletPublicId == destWallet.WalletPublicId {
+		return InquiryEntity{}, response.ErrSameWallet
 	}
 
 	inquiry := NewInquiry(req, UserPublicId)
+
+
 	if err := s.repo.CreateInquiry(ctx, inquiry); err != nil {
-		return InquiryEntity{}, WalletEntity{}, nil
+		return InquiryEntity{}, nil
 	}
 
-	return inquiry, destWallet, nil
+	return inquiry, nil
 }
 
 func (s service) TransferExecute(
 	ctx context.Context,
 	req TransferExecuteRequest,
 	userPublicId string,
-) (err error) {
+) (transaction TransactionEntity, err error) {
 
 	// GET INQUIRY
 	inquiry, err := s.repo.GetInquiryByKey(ctx, req.InquiryKey)
 	if err != nil {
-		return response.ErrInquiryNotFound
+		return TransactionEntity{}, response.ErrInquiryNotFound
 	}
 
 	if time.Now().After(inquiry.ExpiredAt){
-		return response.ErrInquiryExpired
+		return TransactionEntity{}, response.ErrInquiryExpired
 	}
 
 	if inquiry.Sof != userPublicId {
-		return response.ErrUnauthorized
+		return TransactionEntity{}, response.ErrUnauthorized
 	}
 
 	tx, err := s.repo.Begin(ctx)

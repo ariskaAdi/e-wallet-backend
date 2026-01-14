@@ -2,6 +2,7 @@ package main
 
 import (
 	"ariskaAdi/e-wallet/apps/auth"
+	"ariskaAdi/e-wallet/apps/transaction"
 	"ariskaAdi/e-wallet/apps/wallet"
 	"ariskaAdi/e-wallet/eksternal/database"
 	"ariskaAdi/e-wallet/internal/config"
@@ -49,6 +50,7 @@ func main() {
 
 	auth.Init(router, db, emailWorker)
 	wallet.Init(router, db)
+	transaction.Init(router, db)
 
 	router.Listen(":" + config.Cfg.App.Port)
 }

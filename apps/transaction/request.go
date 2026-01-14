@@ -1,7 +1,7 @@
 package transaction
 
 type TransferInquiryRequestPayload struct {
-	DestinationWalletPublicId string `json:"destination_wallet_public_id"`
+	Dof string `json:"dof_number"`
 }
 
 type TransferExecuteRequest struct {

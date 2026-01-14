@@ -3,6 +3,7 @@ package transaction
 import (
 	"ariskaAdi/e-wallet/infra/response"
 	"context"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -11,6 +12,7 @@ type Repository interface {
 	TransactionDBRepository
 	TransactionRepository
 	WalletRepository
+	InquiryRepository
 }
 
 type TransactionDBRepository interface {
@@ -26,12 +28,15 @@ type TransactionRepository interface {
 type WalletRepository interface {
 	GetByUserPublicId(ctx context.Context, userPublicId string) (model WalletEntity, err error)
 	GetByWalletPublicId(ctx context.Context, walletPublicId string) (model WalletEntity, err error)
-
 	GetByUserPublicIdForUpdate(ctx context.Context, tx *sqlx.Tx, userPublicId string) (model WalletEntity, err error)
-	GetByWalletPublicIdForUpdate(ctx context.Context, tx *sqlx.Tx, req TransferExecuteRequest) (model WalletEntity, err error)
-
-
+	GetByWalletPublicIdForUpdate(ctx context.Context, tx *sqlx.Tx, walletPublicId string) (model WalletEntity, err error)
 	UpdateWallet(ctx context.Context, tx *sqlx.Tx, model WalletEntity) (err error)
+}
+
+type InquiryRepository interface {
+	CreateInquiry(ctx context.Context, model InquiryEntity) (err error)
+	GetInquiryByKey(ctx context.Context, inquiryKey string) (model InquiryEntity, err error)
+	DeleteInquiry(ctx context.Context, inquiryKey string) (err error)
 }
 
 
@@ -43,35 +48,33 @@ func newService(repo Repository) service {
 	return service{repo: repo}
 }
 
-func (s service) TransferInquiry(ctx context.Context, req TransferInquiryRequestPayload, UserPublicId string) (destWallet WalletEntity, err error) {
-	
+func (s service) TransferInquiry(ctx context.Context, req TransferInquiryRequestPayload, UserPublicId string) (InquiryKey InquiryEntity, destWallet WalletEntity, err error) {
+
 	// check wallet sender
 	myWallet, err := s.repo.GetByUserPublicId(ctx, UserPublicId)
-	if err != nil {
-		return
-	}
-	if !myWallet.isExist() {
-		err = response.ErrNotFound
-		return
+	if err != nil || !myWallet.isExist() {
+		return InquiryEntity{}, WalletEntity{}, response.ErrNotFound
 	}
 
-	// check wallet receiver
-	destWallet, err = s.repo.GetByWalletPublicId(ctx, req.DestinationWalletPublicId)
-	if err != nil {
-		return
-	}
-	if !destWallet.isExist() {
-		err = response.ErrNotFound
-		return
-	}
-
-	// validate
+		// validate
 	if myWallet.WalletPublicId == destWallet.WalletPublicId {
 		err = response.ErrSameWallet
 		return
 	}
+	
 
-	return
+	// check wallet receiver
+	destWallet, err = s.repo.GetByWalletPublicId(ctx, req.Dof)
+	if err != nil || !destWallet.isExist() {
+		return InquiryEntity{}, WalletEntity{}, response.ErrNotFound
+	}
+
+	inquiry := NewInquiry(req, UserPublicId)
+	if err := s.repo.CreateInquiry(ctx, inquiry); err != nil {
+		return InquiryEntity{}, WalletEntity{}, nil
+	}
+
+	return inquiry, destWallet, nil
 }
 
 func (s service) TransferExecute(
@@ -79,6 +82,20 @@ func (s service) TransferExecute(
 	req TransferExecuteRequest,
 	userPublicId string,
 ) (err error) {
+
+	// GET INQUIRY
+	inquiry, err := s.repo.GetInquiryByKey(ctx, req.InquiryKey)
+	if err != nil {
+		return response.ErrInquiryNotFound
+	}
+
+	if time.Now().After(inquiry.ExpiredAt){
+		return response.ErrInquiryExpired
+	}
+
+	if inquiry.Sof != userPublicId {
+		return response.ErrUnauthorized
+	}
 
 	tx, err := s.repo.Begin(ctx)
 	if err != nil {
@@ -100,7 +117,7 @@ func (s service) TransferExecute(
 	destWallet, err := s.repo.GetByWalletPublicIdForUpdate(
 		ctx,
 		tx,
-		req.DestinationWalletPublicId, // dari inquiry cache
+		inquiry.Dof,
 	)
 	if err != nil {
 		return
@@ -139,6 +156,9 @@ func (s service) TransferExecute(
 		return
 	}
 
-	err = s.repo.Commit(ctx, tx)
+	if err = s.repo.Commit(ctx, tx); err != nil {
+		return
+	}
+	_ = s.repo.DeleteInquiry(ctx, req.InquiryKey)
 	return
 }

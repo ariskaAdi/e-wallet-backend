@@ -30,6 +30,8 @@ var (
 	ErrTransactionTypeInvalid = errors.New("invalid type transaction")
 	ErrInsufficientBalance = errors.New("insufficient balance")
 	ErrSameWallet = errors.New("same wallet")
+	ErrInquiryNotFound = errors.New("inqury key not found")
+	ErrInquiryExpired = errors.New("inquiry key expired")
 )
 
 type Error struct {

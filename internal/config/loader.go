@@ -49,6 +49,10 @@ func LoadConfig() {
 			Pass: viper.GetString("SMTP_PASS"),
 			From: viper.GetString("SMTP_FROM"),
 		},
+		Xendit: Xendit{
+			Key: viper.GetString("XENDIT_KEY"),
+			IsProd: viper.GetString("XENDIT_ENV") == "production",
+		},
 	}
 
 	validate()

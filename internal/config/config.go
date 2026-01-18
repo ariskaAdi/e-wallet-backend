@@ -1,9 +1,10 @@
 package config
 
 type Config struct {
-	App  AppConfig
-	DB   DBConfig
-	SMTP SMTPConfig
+	App    AppConfig
+	DB     DBConfig
+	SMTP   SMTPConfig
+	Xendit Xendit
 }
 
 type AppConfig struct {
@@ -39,6 +40,11 @@ type SMTPConfig struct {
 	User string
 	Pass string
 	From string
+}
+
+type Xendit struct {
+	Key    string
+	IsProd bool
 }
 
 var Cfg Config

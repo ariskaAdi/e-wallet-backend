@@ -2,6 +2,7 @@ package main
 
 import (
 	"ariskaAdi/e-wallet/apps/auth"
+	"ariskaAdi/e-wallet/apps/topup"
 	"ariskaAdi/e-wallet/apps/transaction"
 	"ariskaAdi/e-wallet/apps/wallet"
 	"ariskaAdi/e-wallet/eksternal/database"
@@ -44,13 +45,14 @@ func main() {
 	emailWorker.Start(ctx)
 
 	router := fiber.New(fiber.Config{
-		Prefork: true,
+		// Prefork: true,
 		AppName: config.Cfg.App.Name,
 	})
 
 	auth.Init(router, db, emailWorker)
 	wallet.Init(router, db)
 	transaction.Init(router, db)
+	topup.Init(router, db, &config.Cfg)
 
 	router.Listen(":" + config.Cfg.App.Port)
 }

@@ -11,15 +11,15 @@ import (
 )
 
 type AuthEntity struct {
-	Id        int    `db:"id"`
-	Username  string `db:"username"`
-	Email     string `db:"email"`
+	Id        int    	`db:"id"`
+	Username  string 	`db:"username"`
+	Email     string 	`db:"email"`
 	PublicId  uuid.UUID `db:"public_id"`
-	OTP       string `db:"otp"`
-	Password  string `db:"password"`
+	OTP       string 	`db:"otp"`
+	Password  string 	`db:"password"`
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
-	Verified  bool `db:"verified"`
+	Verified  bool 		`db:"verified"`
 }
 
 func NewFormRegisterRequset(req RegisterRequestPayload) AuthEntity {

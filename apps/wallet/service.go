@@ -20,6 +20,7 @@ func newService(repo Repository) service {
 
 
 func (s service) GetMyWallet(ctx context.Context, userPublicId string) (myWallet WalletEntity, err error) {
+
 	myWallet, err = s.repo.GetWalletByUserPublicId(ctx, userPublicId)
 
 	if err != nil {
@@ -34,6 +35,7 @@ func (s service) GetMyWallet(ctx context.Context, userPublicId string) (myWallet
 }
 
 func (s service) GetWalletId(ctx context.Context, req GetWalletByIdRequestPayload) (wallet WalletEntity, err error) {
+
 	wallet, err = s.repo.GetByWalletId(ctx, req.WalletPublicId)
 	if err != nil {
 		if err == response.ErrNotFound {
@@ -42,5 +44,7 @@ func (s service) GetWalletId(ctx context.Context, req GetWalletByIdRequestPayloa
 		}
 		return
 	}
+	
 	return
+	
 }

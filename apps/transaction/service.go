@@ -80,11 +80,7 @@ func (s service) TransferInquiry(ctx context.Context, req TransferInquiryRequest
 	return inquiry, nil
 }
 
-func (s service) TransferExecute(
-	ctx context.Context,
-	req TransferExecuteRequest,
-	userPublicId string,
-) (transaction TransactionEntity, err error) {
+func (s service) TransferExecute( ctx context.Context, req TransferExecuteRequest, userPublicId string) (transaction TransactionEntity, err error) {
 
 	// GET INQUIRY
 	inquiry, err := s.repo.GetInquiryByKey(ctx, req.InquiryKey)

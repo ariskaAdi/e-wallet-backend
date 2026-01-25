@@ -34,7 +34,7 @@ func (r repository) Rollback(ctx context.Context, tx *sqlx.Tx) (err error) {
 
 func (r repository) CreateTransaction(ctx context.Context, tx *sqlx.Tx, model TransactionEntity) (err error) {
 	query := `
-		INSERT INTO transaction (
+		INSERT INTO transactions (
 			transaction_id, wallet_public_id, sof_number, dof_number, type, amount, status, reference, description, created_at, updated_at
 		) VALUES (
 			:transaction_id, :wallet_public_id, :sof_number, :dof_number, :type, :amount, :status, :reference, :description, :created_at, :updated_at

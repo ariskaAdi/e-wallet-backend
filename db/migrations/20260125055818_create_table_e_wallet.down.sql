@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS topup;
+DROP TABLE IF EXISTS transfer_inquiry;
+DROP TABLE IF EXISTS transactions;
+DROP TABLE IF EXISTS wallet;
+DROP TABLE IF EXISTS auth;

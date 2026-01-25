@@ -31,12 +31,7 @@ type Service interface {
 }
 
 type WalletRepository interface {
-	AddBalance(
-		ctx context.Context,
-		tx *sqlx.Tx,
-		userPublicId string,
-		amount int64,
-	) error
+	AddBalance(ctx context.Context, tx *sqlx.Tx, userPublicId string, amount int64) error
 }
 
 type service struct {
@@ -124,6 +119,7 @@ func (s *service) ConfirmTopUp(ctx context.Context, topUpId string ) error {
 }
 
 func (s *service) FailTopUp(ctx context.Context, topupId string) error {
+
 	tx, err := s.tx.Begin(ctx)
 	if err != nil {
 		return err

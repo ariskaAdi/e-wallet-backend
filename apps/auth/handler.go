@@ -4,6 +4,7 @@ import (
 	infrafiber "ariskaAdi/e-wallet/infra/fiber"
 	"ariskaAdi/e-wallet/infra/response"
 	"net/http"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -71,6 +72,16 @@ func (h handler) login(ctx *fiber.Ctx) error {
 		).Send(ctx)
 	}
 
+	// SET COOKIE
+	ctx.Cookie(&fiber.Cookie{
+		Name: "access_token",
+		Value: token,
+		HTTPOnly: true,
+		// Secure:   config.Cfg.App.Env == "production",
+		SameSite: fiber.CookieSameSiteLaxMode,
+		Expires:  time.Now().Add(24 * time.Hour),
+	})
+
 	return infrafiber.NewResponse(
 		infrafiber.WithHttpCode(http.StatusCreated),
 		infrafiber.WithPayload(map[string]interface{}{
@@ -108,5 +119,18 @@ func (h handler) verifyOtp(ctx *fiber.Ctx) error {
 	).Send(ctx)
 	
 	
+}
+
+func (h handler) logout(ctx *fiber.Ctx) error {
+	ctx.Cookie(&fiber.Cookie{
+		Name:     "access_token",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HTTPOnly: true,
+	})
+
+	return infrafiber.NewResponse(
+		infrafiber.WithMessage("logout success"),
+	).Send(ctx)
 }
 

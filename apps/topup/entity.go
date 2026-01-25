@@ -1,7 +1,7 @@
 package topup
 
 import (
-	"errors"
+	"ariskaAdi/e-wallet/infra/response"
 	"time"
 
 	"github.com/google/uuid"
@@ -28,24 +28,24 @@ var MappingTopUpStatus = map[TopUpStatus]string{
 }
 
 type TopUpEntity struct {
-	Id        int       `db:"id"`
-	TopUpId   string    `db:"topup_id"`
-	UserPublicId string `db:"user_public_id"`
-	Amount    int64     `db:"amount"`
-	Status    TopUpStatus `db:"status"`
-	SnapURL string `db:"snap_url"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	Id        		int       	`db:"id"`
+	TopUpId   		string    	`db:"topup_id"`
+	UserPublicId 	string 		`db:"user_public_id"`
+	Amount    		int64     	`db:"amount"`
+	Status    		TopUpStatus `db:"status"`
+	SnapURL 		string 		`db:"snap_url"`
+	CreatedAt 		time.Time 	`db:"created_at"`
+	UpdatedAt 		time.Time 	`db:"updated_at"`
 }
 
 func NewTopUp(amount int64, userPublicId string) TopUpEntity {
 	return TopUpEntity{
-		TopUpId:   uuid.NewString(),
-		UserPublicId: userPublicId,
-		Amount:    amount,
-		Status:    TopUpPending,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		TopUpId:   		uuid.NewString(),
+		UserPublicId: 	userPublicId,
+		Amount:    		amount,
+		Status:    		TopUpPending,
+		CreatedAt: 		time.Now(),
+		UpdatedAt: 		time.Now(),
 	}
 }
 
@@ -56,7 +56,7 @@ func (t *TopUpEntity) AttachSnapUrl(url string) {
 
 func (t *TopUpEntity) MarkSuccess() (err error) {
 	if t.Status != TopUpPending {
-		return errors.New("Topup is not pending")
+		return response.ErrTopUpNotPending
 	}
 
 	t.Status = TopUpSuccess

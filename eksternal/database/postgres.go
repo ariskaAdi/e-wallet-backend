@@ -30,7 +30,18 @@ func ConnectPostgres(cfg config.DBConfig) (db *sqlx.DB, err error ){
 	db.SetMaxOpenConns(int(cfg.ConnectionPool.MaxOpen))
 	db.SetConnMaxIdleTime(time.Duration(cfg.ConnectionPool.MaxIdleTime) * time.Second) 
 	db.SetConnMaxLifetime(time.Duration(cfg.ConnectionPool.MaxLifetime) * time.Second)
+
 	
-	
+
 	return
 }
+
+// MIGRATION DEV
+// migrate -database "postgres://postgres:mysecretpassword@localhost:5432/ewallet?sslmode=disable" -path db/migrations up
+
+// VERIFY MIGRATION
+// migrate -path db/migration -database "postgres://postgres:mysecretpassword@localhost:5432/ewallet?sslmode=disable" version
+
+// CHECK PG DOCKER
+// docker exec -it container-postgres psql -U postgres -d ewallet
+// \dt

@@ -32,6 +32,9 @@ var (
 	ErrSameWallet = errors.New("same wallet")
 	ErrInquiryNotFound = errors.New("inqury key not found")
 	ErrInquiryExpired = errors.New("inquiry key expired")
+
+	// topup error
+	ErrTopUpNotPending = errors.New("invalid status topup")
 )
 
 type Error struct {

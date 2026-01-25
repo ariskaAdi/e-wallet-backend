@@ -12,6 +12,7 @@ import (
 	"log"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 )
 
@@ -48,6 +49,12 @@ func main() {
 		// Prefork: true,
 		AppName: config.Cfg.App.Name,
 	})
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins: "http://localhost:3000",
+		AllowMethods: "GET,POST,PUT,PATCH,DELETE,OPTION",
+		AllowHeaders: "Authorization, Content-Type",
+	}))
 
 	auth.Init(router, db, emailWorker)
 	wallet.Init(router, db)

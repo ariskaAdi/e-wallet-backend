@@ -54,6 +54,7 @@ func main() {
 		AllowOrigins: "http://localhost:3000",
 		AllowMethods: "GET,POST,PUT,PATCH,DELETE,OPTION",
 		AllowHeaders: "Authorization, Content-Type",
+		AllowCredentials: true,
 	}))
 
 	auth.Init(router, db, emailWorker)

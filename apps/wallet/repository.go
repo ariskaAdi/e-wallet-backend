@@ -18,7 +18,7 @@ func newRepository(db *sqlx.DB) repository {
 
 func (r repository) GetWalletByUserPublicId(ctx context.Context, userPublicId string) (model WalletEntity, err error) {
 	query := `
-		SELECT id, user_public_id, balance, created_at, updated_at
+		SELECT id, user_public_id, wallet_public_id, name, balance, created_at, updated_at
 		FROM wallet
 		WHERE user_public_id = $1
 	`

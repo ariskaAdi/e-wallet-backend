@@ -34,6 +34,8 @@ func (h handler) GetMyWallet(ctx *fiber.Ctx) error {
 
 	resp := MyWalletResponse{
 		UserPublicId: myWallet.UserPublicId,
+		WalletPublicId: myWallet.WalletPublicId,
+		Name: myWallet.Name,
 		Balance:      myWallet.Balance,
 		CreatedAt:    myWallet.CreatedAt,
 		UpdatedAt:    myWallet.UpdatedAt,
